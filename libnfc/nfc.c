@@ -1433,3 +1433,7 @@ str_nfc_target(char **buf, const nfc_target *pnt, bool verbose)
   snprint_nfc_target(*buf, 4096, pnt, verbose);
   return strlen(*buf);
 }
+
+int nfc_device_beep(nfc_device *pnd, const uint16_t durationMs) {
+  HAL(beep, pnd, durationMs);
+}

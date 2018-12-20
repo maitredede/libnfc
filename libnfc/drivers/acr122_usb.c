@@ -825,6 +825,70 @@ acr122_usb_abort_command(nfc_device *pnd)
   return NFC_SUCCESS;
 }
 
+static int
+acr122_usb_led_buzz_control(nfc_device *pnd, uint8_t ledStateControl, uint8_t t1, uint8_t t2, uint8_t numRepetition, uint8_t linkBuzzer){
+  int res = 0;
+  // int i;
+  uint8_t  abtRxBuf[255 + sizeof(struct ccid_header)];
+
+  // See ACR122 manual: "Bi-Color LED and Buzzer Control" section
+  uint8_t acr122u_get_led_state_frame[] = {
+    0x6b, // CCID
+    0x09, // lenght of frame
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // padding
+    // frame:
+    0xff, // Class
+    0x00, // INS
+    0x40, // P1: Get LED state command
+    ledStateControl, // P2: LED state control
+    0x04, // Lc
+    t1, t2, numRepetition, linkBuzzer, // Blinking duration control
+  };
+
+  log_put(LOG_GROUP, LOG_CATEGORY, NFC_LOG_PRIORITY_DEBUG, "p2=0x%02x, t1=0x%02x, t2=0x%02x, numRepetition=0x%02x, linkBuzzer=0x%02x", ledStateControl, t1, t2, numRepetition, linkBuzzer);
+  if ((res = acr122_usb_bulk_write (DRIVER_DATA (pnd), (uint8_t *) acr122u_get_led_state_frame, sizeof (acr122u_get_led_state_frame), 1000)) < 0){
+    pnd->last_error = res;
+    return pnd->last_error;
+  }
+
+  if ((res = acr122_usb_bulk_read (DRIVER_DATA (pnd), abtRxBuf, sizeof (abtRxBuf), 1000)) < 0){
+    pnd->last_error = res;
+    return pnd->last_error;
+  }
+  struct ccid_header abtRxHeader = *((struct ccid_header*)&abtRxBuf);
+  printf("response length: %d\n", abtRxHeader.dwLength);
+  if(abtRxHeader.dwLength != 2){
+    log_put (LOG_CATEGORY, NFC_LOG_PRIORITY_ERROR, "ACR122 LED and Buzzer Control : unknown response length : %d (expected 2)", abtRxHeader.dwLength);
+    pnd->last_error = NFC_ESOFT;
+    return pnd->last_error;
+  }
+  const uint8_t* abtRxBody = &abtRxBuf + sizeof(struct ccid_header);
+  if(abtRxBody[0] == 0x90){
+    pnd->last_error = NFC_SUCCESS;
+    return pnd->last_error;
+  }
+  else {
+    log_put (LOG_CATEGORY, NFC_LOG_PRIORITY_ERROR, "ACR122 LED and Buzzer Control : response code (0x%01x) is not success", abtRxBody[0]);
+    pnd->last_error = NFC_ESOFT;
+    return pnd->last_error;
+  }
+}
+
+static int
+acr122_usb_beep(nfc_device *pnd, const uint16_t durationMs) {
+  log_put(LOG_GROUP, LOG_CATEGORY, NFC_LOG_PRIORITY_DEBUG, "Driver beeping \"%d\".", durationMs);
+
+  uint16_t maxDuration = 25500*2;
+  if(durationMs > maxDuration){
+    log_put(LOG_GROUP, LOG_CATEGORY, NFC_LOG_PRIORITY_ERROR, "Beep duration too long: \"%d\" max: \"%d\".", durationMs, maxDuration);
+    pnd->last_error = NFC_EINVARG;
+    return pnd->last_error;
+  }
+  uint8_t t1 = (uint8_t)(durationMs/200);
+  uint8_t t2 = (uint8_t)((durationMs-(t1*100))/100);
+  return acr122_usb_led_buzz_control(pnd, 0x00, t1, t2, 0x01, 0x03);
+}
+
 const struct pn53x_io acr122_usb_io = {
   .send       = acr122_usb_send,
   .receive    = acr122_usb_receive,
@@ -866,4 +930,6 @@ const struct nfc_driver acr122_usb_driver = {
   .idle           = pn53x_idle,
   /* Even if PN532, PowerDown is not recommended on those devices */
   .powerdown      = NULL,
+
+  .beep = acr122_usb_beep,
 };

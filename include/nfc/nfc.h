@@ -147,6 +147,9 @@ NFC_EXPORT const char *str_nfc_modulation_type(const nfc_modulation_type nmt);
 NFC_EXPORT const char *str_nfc_baud_rate(const nfc_baud_rate nbr);
 NFC_EXPORT int str_nfc_target(char **buf, const nfc_target *pnt, bool verbose);
 
+/* Device specific functions */
+NFC_EXPORT int nfc_device_beep(nfc_device *pnd, const uint16_t durationMs);
+
 /* Error codes */
 /** @ingroup error
  * @hideinitializer

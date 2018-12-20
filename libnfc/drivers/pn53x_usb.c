@@ -905,4 +905,6 @@ const struct nfc_driver pn53x_usb_driver = {
   .abort_command  = pn53x_usb_abort_command,
   .idle           = pn53x_idle,
   .powerdown      = pn53x_PowerDown,
+
+  .beep = NULL,
 };

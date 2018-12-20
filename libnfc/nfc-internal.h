@@ -156,6 +156,8 @@ struct nfc_driver {
   int (*abort_command)(struct nfc_device *pnd);
   int (*idle)(struct nfc_device *pnd);
   int (*powerdown)(struct nfc_device *pnd);
+
+  int (*beep)(struct nfc_device *pnd, const uint16_t durationMs);
 };
 
 #  define DEVICE_NAME_LENGTH  256
