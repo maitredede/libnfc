@@ -33,6 +33,7 @@ examples/nfc-emulate-tag
 examples/nfc-emulate-uid
 examples/nfc-mfsetuid
 examples/nfc-poll
+examples/nfc-beep
 examples/nfc-relay
 examples/pn53x-diagnose
 examples/pn53x-sam

@@ -7,6 +7,7 @@ SET(EXAMPLES-SOURCES
   nfc-emulate-uid
   nfc-mfsetuid
   nfc-poll
+  nfc-beep
   nfc-relay
   nfc-st25tb
   pn53x-diagnose

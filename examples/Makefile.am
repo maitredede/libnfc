@@ -9,6 +9,7 @@ bin_PROGRAMS = \
 		nfc-emulate-uid \
 		nfc-mfsetuid \
 		nfc-poll \
+		nfc-beep \
 		nfc-relay \
 		nfc-st25tb \
 		pn53x-diagnose \
@@ -30,6 +31,10 @@ AM_CFLAGS = -I$(top_srcdir)/libnfc -I$(top_srcdir)
 
 nfc_poll_SOURCES = nfc-poll.c
 nfc_poll_LDADD = $(top_builddir)/libnfc/libnfc.la \
+		 $(top_builddir)/utils/libnfcutils.la
+
+nfc_beep_SOURCES = nfc-beep.c
+nfc_beep_LDADD = $(top_builddir)/libnfc/libnfc.la \
 		 $(top_builddir)/utils/libnfcutils.la
 
 nfc_anticol_SOURCES = nfc-anticol.c
@@ -97,6 +102,7 @@ dist_man_MANS = \
 		nfc-emulate-tag.1 \
 		nfc-emulate-uid.1 \
 		nfc-poll.1 \
+		nfc-beep.1 \
 		nfc-relay.1 \
 		nfc-mfsetuid.1 \
 		pn53x-diagnose.1 \
